@@ -1,3 +1,5 @@
+#include <errno.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -13,10 +15,13 @@ void signalHandler(int signal)
 
 int main(int argc, const char *argv[])
 {
+  if (argc < 3) {
+    fprintf(stderr, "Expected: %s <evaluator-path> <pass>\n", argv[0]);
+    exit(EXIT_FAILURE);
+  }
+
   pid_t pid;
 
-  signal(SIGINT, signalHandler);
-  
   if ((pid = fork()))
   {
     int wstatus;
@@ -24,8 +29,18 @@ int main(int argc, const char *argv[])
     signal(SIGINT, SIG_IGN);
     signal(SIGQUIT, SIG_IGN);
     printf("forked process %d\n", pid);
-    (void)wait(&wstatus);
 
+    printf("sleeping...\n");
+    sleep(3);
+
+    printf("killing...\n");
+    if (kill(pid, SIGTERM) == -1) {
+      printf("kill failed (%i)\n", errno);
+      exit(EXIT_FAILURE);
+    }
+
+    printf("waiting...\n");
+    (void)wait(&wstatus);
     if (WIFEXITED(wstatus))
       printf("process %d terminated normally with exitCode %i\n", pid, WEXITSTATUS(wstatus));
     else if (WIFSIGNALED(wstatus))
@@ -39,10 +54,9 @@ int main(int argc, const char *argv[])
   pid = getpid();
   printf("child process %d begins\n", pid);
 
-  while(!quitSignal)
-    sleep(1);
-
-  printf("child process %d trapped signal %i\n", pid, quitSignal);
-  exit(100 + quitSignal);
+  if (atoi(argv[2])) {
+    execlp(argv[1], "dcp-evaluator", NULL);
+  } else {
+    execlp("node", "node", "node_modules/dcp-worker/bin/dcp-evaluator-start", "-e", argv[1], NULL);
+  }
 }
-
