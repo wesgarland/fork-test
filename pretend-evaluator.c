@@ -25,6 +25,8 @@ int main(int argc, const char *argv[])
 {
   pid_t pid = getpid();
   printf("pretend evaluator %d begins\n", pid);
+  signal(SIGTERM, signalHandler);
+  signal(SIGINT, signalHandler);
 
   while(!quitSignal)
     sleep(1);
