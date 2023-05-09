@@ -10,7 +10,7 @@ static int quitSignal;
 
 void signalHandler(int signal)
 {
-  static const char msg[] = "trapped signal ";
+  static const char msg[] = "pretend evaluator signalHandler trapped signal ";
   static char buf[3];
 
   quitSignal = signal;
@@ -24,7 +24,9 @@ void signalHandler(int signal)
 int main(int argc, const char *argv[])
 {
   pid_t pid = getpid();
+
   printf("pretend evaluator %d begins\n", pid);
+
   signal(SIGTERM, signalHandler);
   signal(SIGINT, signalHandler);
 

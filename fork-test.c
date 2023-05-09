@@ -54,9 +54,14 @@ int main(int argc, const char *argv[])
   pid = getpid();
   printf("child process %d begins\n", pid);
 
-  if (atoi(argv[2])) {
+  if (atoi(argv[2]))
+  {
+    printf("process %d becoming %s\n", pid, argv[1]);
     execlp(argv[1], "dcp-evaluator", NULL);
-  } else {
+  } 
+  else
+  {
+    printf("process %d becoming node\n", pid);
     execlp("node", "node", "node_modules/dcp-worker/bin/dcp-evaluator-start", "-e", argv[1], NULL);
   }
 }
